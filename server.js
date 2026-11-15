@@ -6,7 +6,12 @@ const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const { db } = require('./db');
 
-const SECRET = process.env.JWT_SECRET || 'change-me-in-prod';
+// Секретный ключ для токенов
+const SECRET = process.env.JWT_SECRET || 'super-secret-key-123';
+
+// Твой ключ от SMS.ru (вшит прямо в код)
+const SMS_API_ID = "7EE737F2-2B95-849C-35C9-1D309104C9F3";
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -14,6 +19,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
+// --- СТАРЫЕ МАРШРУТЫ ---
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'нужны логин и пароль' });
@@ -48,6 +54,52 @@ app.get('/users', auth, (req, res) => {
   res.json(users);
 });
 
+// --- НОВЫЕ МАРШРУТЫ ДЛЯ СМС ---
+app.post('/send-code', async (req, res) => {
+  let { phone } = req.body;
+  if (!phone) return res.status(400).json({ error: 'Введи номер' });
+  
+  phone = phone.replace(/\D/g, ''); 
+  const code = Math.floor(1000 + Math.random() * 9000).toString();
+  
+  db.prepare('INSERT OR REPLACE INTO codes (phone, code) VALUES (?, ?)').run(phone, code);
+
+  try {
+    const smsRes = await fetch(`https://sms.ru/sms/send?api_id=${SMS_API_ID}&to=${phone}&msg=Ваш код: ${code}&json=1`);
+    const smsData = await smsRes.json();
+    
+    if (smsData.status === 'OK') {
+      res.json({ ok: true });
+    } else {
+      res.status(400).json({ error: 'Ошибка SMS: ' + (smsData.status_text || 'Неизвестно') });
+    }
+  } catch (e) {
+    res.status(500).json({ error: 'Ошибка сервера при отправке' });
+  }
+});
+
+app.post('/verify-code', async (req, res) => {
+  let { phone, code, password } = req.body;
+  phone = phone.replace(/\D/g, '');
+
+  const saved = db.prepare('SELECT code FROM codes WHERE phone = ?').get(phone);
+  
+  if (!saved || saved.code !== code) {
+    return res.status(400).json({ error: 'Неверный код' });
+  }
+
+  try {
+    const hash = await bcrypt.hash(password, 10);
+    const info = db.prepare('INSERT INTO users (username, password) VALUES (?, ?)').run(phone, hash);
+    const user = { id: info.lastInsertRowid, username: phone };
+    db.prepare('DELETE FROM codes WHERE phone = ?').run(phone);
+    res.json({ token: jwt.sign(user, SECRET), user });
+  } catch {
+    res.status(400).json({ error: 'Этот номер уже зарегистрирован' });
+  }
+});
+
+// --- WEBSOCKETS (ЧАТЫ) ---
 io.use((socket, next) => {
   try { socket.user = jwt.verify(socket.handshake.auth.token, SECRET); next(); }
   catch { next(new Error('unauthorized')); }
