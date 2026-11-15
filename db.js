@@ -7,6 +7,7 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
+    avatar TEXT,
     online INTEGER DEFAULT 0,
     created_at INTEGER DEFAULT (strftime('%s','now')*1000)
   );
@@ -14,7 +15,8 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     from_id INTEGER NOT NULL,
     to_id INTEGER NOT NULL,
-    text TEXT NOT NULL,
+    text TEXT,
+    image TEXT,
     is_read INTEGER DEFAULT 0,
     created_at INTEGER DEFAULT (strftime('%s','now')*1000)
   );
@@ -24,7 +26,8 @@ db.exec(`
   );
 `);
 
-// Эта строчка добавит колонку is_read в базу, если ее там еще нет
+try { db.exec("ALTER TABLE users ADD COLUMN avatar TEXT;"); } catch(e) {}
 try { db.exec("ALTER TABLE messages ADD COLUMN is_read INTEGER DEFAULT 0;"); } catch(e) {}
+try { db.exec("ALTER TABLE messages ADD COLUMN image TEXT;"); } catch(e) {}
 
 module.exports = { db };
