@@ -15,8 +15,16 @@ db.exec(`
     from_id INTEGER NOT NULL,
     to_id INTEGER NOT NULL,
     text TEXT NOT NULL,
+    is_read INTEGER DEFAULT 0,
     created_at INTEGER DEFAULT (strftime('%s','now')*1000)
   );
+  CREATE TABLE IF NOT EXISTS codes (
+    phone TEXT PRIMARY KEY,
+    code TEXT NOT NULL
+  );
 `);
+
+// Эта строчка добавит колонку is_read в базу, если ее там еще нет
+try { db.exec("ALTER TABLE messages ADD COLUMN is_read INTEGER DEFAULT 0;"); } catch(e) {}
 
 module.exports = { db };
