@@ -1,5 +1,5 @@
 const Database = require('better-sqlite3');
-const db = new Database('/data/messenger.db');
+const db = new Database('messenger.db');
 db.pragma('journal_mode = WAL');
 
 db.exec(`
