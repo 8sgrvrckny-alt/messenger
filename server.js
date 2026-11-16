@@ -21,7 +21,7 @@ app.post('/register', async (req, res) => {
   try {
     const hash = await bcrypt.hash(password, 10);
     const info = db.prepare('INSERT INTO users (username, password) VALUES (?, ?)').run(username, hash);
-    const user = { id: info.lastInsertRowid, username, avatar: null };
+    const user = { id: info.lastInsertRowid, username, avatar: null, frame: 'none' };
     res.json({ token: jwt.sign(user, SECRET), user });
   } catch { res.status(400).json({ error: 'Этот логин уже занят' }); }
 });
@@ -32,7 +32,7 @@ app.post('/login', async (req, res) => {
   if (!u || !(await bcrypt.compare(password, u.password))) {
     return res.status(401).json({ error: 'Неверный логин или пароль' });
   }
-  const user = { id: u.id, username: u.username, avatar: u.avatar };
+  const user = { id: u.id, username: u.username, avatar: u.avatar, frame: u.frame };
   res.json({ token: jwt.sign(user, SECRET), user });
 });
 
@@ -43,7 +43,7 @@ function auth(req, res, next) {
 }
 
 app.get('/users', auth, (req, res) => {
-  const users = db.prepare('SELECT id, username, online, avatar FROM users WHERE id != ?').all(req.user.id);
+  const users = db.prepare('SELECT id, username, online, avatar, frame FROM users WHERE id != ?').all(req.user.id);
   res.json(users);
 });
 
@@ -52,6 +52,13 @@ app.post('/user/avatar', auth, (req, res) => {
   if (!avatar) return res.status(400).json({ error: 'Нет картинки' });
   db.prepare('UPDATE users SET avatar = ? WHERE id = ?').run(avatar, req.user.id);
   io.emit('avatar:updated', { userId: req.user.id, avatar });
+  res.json({ ok: true });
+});
+
+app.post('/user/frame', auth, (req, res) => {
+  const { frame } = req.body;
+  db.prepare('UPDATE users SET frame = ? WHERE id = ?').run(frame, req.user.id);
+  io.emit('frame:updated', { userId: req.user.id, frame });
   res.json({ ok: true });
 });
 
@@ -66,22 +73,21 @@ io.on('connection', (socket) => {
   db.prepare('UPDATE users SET online = 1 WHERE id = ?').run(userId);
   io.emit('presence', { userId, online: true });
 
+  // НОВОЕ: Статус "Печатает..."
+  socket.on('typing', ({ to, isTyping }) => {
+    io.to(`user:${to}`).emit('typing', { from: userId, isTyping });
+  });
+
   socket.on('message:send', ({ to, text, image }, cb) => {
     if (!to || (!text?.trim() && !image)) return cb?.({ error: 'пусто' });
-    
     try {
       const info = db.prepare('INSERT INTO messages (from_id, to_id, text, image) VALUES (?, ?, ?, ?)')
         .run(userId, to, text ? text.trim() : null, image || null);
-        
       const msg = { id: info.lastInsertRowid, from: userId, to, text: text ? text.trim() : null, image: image || null, is_read: 0, created_at: Date.now() };
-      
       io.to(`user:${to}`).emit('message:new', msg);
       socket.emit('message:new', msg);
       cb?.({ ok: true });
-    } catch (err) {
-      console.error("Ошибка при сохранении сообщения:", err);
-      cb?.({ error: 'Ошибка базы данных' });
-    }
+    } catch (err) { cb?.({ error: 'Ошибка базы данных' }); }
   });
 
   socket.on('messages:history', ({ with: otherId }, cb) => {
@@ -89,13 +95,10 @@ io.on('connection', (socket) => {
       const rows = db.prepare(`SELECT id, from_id AS "from", to_id AS "to", text, image, is_read, created_at
         FROM messages WHERE (from_id = ? AND to_id = ?) OR (from_id = ? AND to_id = ?)
         ORDER BY created_at ASC LIMIT 200`).all(userId, otherId, otherId, userId);
-        
       db.prepare(`UPDATE messages SET is_read = 1 WHERE from_id = ? AND to_id = ? AND is_read = 0`).run(otherId, userId);
       io.to(`user:${otherId}`).emit('messages:read', { by: userId });
       cb?.(rows);
-    } catch (err) {
-      cb?.([]);
-    }
+    } catch (err) { cb?.([]); }
   });
 
   socket.on('disconnect', () => {
