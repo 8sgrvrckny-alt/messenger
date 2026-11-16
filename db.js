@@ -9,6 +9,9 @@ db.exec(`
     password TEXT NOT NULL,
     avatar TEXT,
     frame TEXT DEFAULT 'none',
+    coins INTEGER DEFAULT 1000,
+    inventory TEXT DEFAULT '',
+    equipped TEXT DEFAULT 'none',
     online INTEGER DEFAULT 0,
     created_at INTEGER DEFAULT (strftime('%s','now')*1000)
   );
@@ -21,14 +24,13 @@ db.exec(`
     is_read INTEGER DEFAULT 0,
     created_at INTEGER DEFAULT (strftime('%s','now')*1000)
   );
-  CREATE TABLE IF NOT EXISTS codes (
-    phone TEXT PRIMARY KEY,
-    code TEXT NOT NULL
-  );
 `);
 
 try { db.exec("ALTER TABLE users ADD COLUMN avatar TEXT;"); } catch(e) {}
 try { db.exec("ALTER TABLE users ADD COLUMN frame TEXT DEFAULT 'none';"); } catch(e) {}
+try { db.exec("ALTER TABLE users ADD COLUMN coins INTEGER DEFAULT 1000;"); } catch(e) {}
+try { db.exec("ALTER TABLE users ADD COLUMN inventory TEXT DEFAULT '';"); } catch(e) {}
+try { db.exec("ALTER TABLE users ADD COLUMN equipped TEXT DEFAULT 'none';"); } catch(e) {}
 try { db.exec("ALTER TABLE messages ADD COLUMN is_read INTEGER DEFAULT 0;"); } catch(e) {}
 try { db.exec("ALTER TABLE messages ADD COLUMN image TEXT;"); } catch(e) {}
 
