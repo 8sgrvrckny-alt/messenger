@@ -8,6 +8,7 @@ db.exec(`
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     avatar TEXT,
+    frame TEXT DEFAULT 'none',
     online INTEGER DEFAULT 0,
     created_at INTEGER DEFAULT (strftime('%s','now')*1000)
   );
@@ -27,6 +28,7 @@ db.exec(`
 `);
 
 try { db.exec("ALTER TABLE users ADD COLUMN avatar TEXT;"); } catch(e) {}
+try { db.exec("ALTER TABLE users ADD COLUMN frame TEXT DEFAULT 'none';"); } catch(e) {}
 try { db.exec("ALTER TABLE messages ADD COLUMN is_read INTEGER DEFAULT 0;"); } catch(e) {}
 try { db.exec("ALTER TABLE messages ADD COLUMN image TEXT;"); } catch(e) {}
 
