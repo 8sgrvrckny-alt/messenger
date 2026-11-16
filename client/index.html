@@ -1,4 +1,4 @@
-doctype html>
+<!doctype html>
 <html lang="ru">
 <head>
 <meta charset="utf-8"/>
@@ -43,16 +43,23 @@ doctype html>
   .user-item { display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; width: 100%; }
   .user-item:active { background: #202b36; }
   
-  .avatar-container { position: relative; margin-right: 15px; flex-shrink: 0; }
-  .avatar { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #5288c1, #2b5278); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 22px; text-transform: uppercase; overflow: hidden; }
-  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .online-dot { position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: var(--online); border: 2px solid var(--header-bg); border-radius: 50%; display: none; }
+  /* АВАТАРКИ И РАМКИ */
+  .avatar-container { position: relative; margin-right: 15px; flex-shrink: 0; padding: 3px; border-radius: 50%; }
+  .avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #5288c1, #2b5278); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 22px; text-transform: uppercase; overflow: hidden; }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%; }
+  .online-dot { position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: var(--online); border: 2px solid var(--header-bg); border-radius: 50%; display: none; z-index: 2;}
   .user-name { font-size: 17px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* СТИЛИ NFT РАМОК */
+  .frame-none { border: 2px solid transparent; }
+  .frame-gold { border: 2px solid #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.6); background: linear-gradient(135deg, #ffd700, #b8860b); }
+  .frame-neon { border: 2px solid #00ffff; box-shadow: 0 0 10px rgba(0, 255, 255, 0.6); background: linear-gradient(135deg, #00ffff, #0055ff); }
+  .frame-fire { border: 2px solid #ff4500; box-shadow: 0 0 10px rgba(255, 69, 0, 0.6); background: linear-gradient(135deg, #ff4500, #ff8c00); }
 
   .settings-content { padding: 20px; overflow-y: auto; height: 100%; }
   .profile-card { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; margin-top: 10px; }
-  .profile-avatar-big { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #5288c1, #2b5278); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 40px; text-transform: uppercase; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); overflow: hidden; position: relative; cursor: pointer;}
-  .profile-avatar-big img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .profile-avatar-big { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #5288c1, #2b5278); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 40px; text-transform: uppercase; margin-bottom: 15px; overflow: hidden; position: relative; cursor: pointer; padding: 3px;}
+  .profile-avatar-big img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
   .profile-name { font-size: 22px; font-weight: 600; margin-bottom: 5px; }
   .profile-status { color: var(--accent); font-size: 15px; }
   
@@ -63,10 +70,17 @@ doctype html>
   .settings-item-title { font-size: 16px; }
   .logout-btn { color: #ff4d4d; font-weight: 600; }
 
+  /* СЕТКА РАМОК */
+  .frames-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px; }
+  .frame-option { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 5px; }
+  .frame-preview { width: 50px; height: 50px; border-radius: 50%; margin-bottom: 5px; }
+  .frame-label { font-size: 12px; color: var(--text-muted); text-align: center; }
+
   .chat-header { padding: 10px 15px; background: var(--header-bg); display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
   .back-btn { background: none; border: none; cursor: pointer; padding: 5px; margin-right: 10px; display: flex; }
   .back-btn svg { width: 24px; height: 24px; fill: var(--accent); }
-  .chat-header .avatar { width: 40px; height: 40px; font-size: 16px; margin-right: 12px; }
+  .chat-header .avatar-container { margin-right: 12px; padding: 2px; }
+  .chat-header .avatar { width: 36px; height: 36px; font-size: 16px; }
   .chat-header .user-name { font-size: 17px; }
   
   #messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
@@ -117,7 +131,7 @@ doctype html>
     <div class="header">Настройки</div>
     <div class="settings-content">
       <div class="profile-card">
-        <div class="profile-avatar-big" id="profile-avatar-big" onclick="document.getElementById('avatar-input').click()">👤</div>
+        <div class="profile-avatar-big frame-none" id="profile-avatar-big" onclick="document.getElementById('avatar-input').click()">👤</div>
         <div class="profile-name" id="profile-name">Имя</div>
         <div class="profile-status">в сети</div>
       </div>
@@ -135,6 +149,30 @@ doctype html>
         </div>
       </div>
 
+      <!-- ======== БЛОК NFT РАМОК ======== -->
+      <div class="header" style="font-size: 16px; background: transparent; border: none; padding: 10px 0;">Коллекционные рамки (NFT)</div>
+      <div class="settings-group">
+        <div class="frames-grid">
+          <div class="frame-option" onclick="setFrame('none')">
+            <div class="frame-preview frame-none" style="background: #17212b;"></div>
+            <div class="frame-label">Обычная</div>
+          </div>
+          <div class="frame-option" onclick="setFrame('gold')">
+            <div class="frame-preview frame-gold"></div>
+            <div class="frame-label">Золото</div>
+          </div>
+          <div class="frame-option" onclick="setFrame('neon')">
+            <div class="frame-preview frame-neon"></div>
+            <div class="frame-label">Неон</div>
+          </div>
+          <div class="frame-option" onclick="setFrame('fire')">
+            <div class="frame-preview frame-fire"></div>
+            <div class="frame-label">Огонь</div>
+          </div>
+        </div>
+      </div>
+      <!-- ================================= -->
+
       <div class="settings-group">
         <div class="settings-item logout-btn" onclick="logout()">
           <span>Выйти из аккаунта</span>
@@ -148,7 +186,7 @@ doctype html>
       <button class="back-btn" onclick="closeChat()">
         <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
       </button>
-      <div class="avatar-container">
+      <div class="avatar-container frame-none" id="chat-avatar-container">
         <div class="avatar" id="chat-avatar"></div>
         <div class="online-dot" id="chat-online-dot"></div>
       </div>
@@ -185,56 +223,35 @@ const SERVER = 'https://messenger-production-1bbb0bbd.up.railway.app';
 let token, me, socket, currentUser = null;
 let allUsers = []; 
 
-// --- АВТО-ВХОД (ЧТЕНИЕ ИЗ ПАМЯТИ) ---
 function checkAuth() {
   const savedToken = localStorage.getItem('messenger_token');
   const savedUser = localStorage.getItem('messenger_user');
-  
   if (savedToken && savedUser) {
     token = savedToken;
     me = JSON.parse(savedUser);
+    if(!me.frame) me.frame = 'none';
     start();
   }
 }
 
-// --- РЕГИСТРАЦИЯ И ВХОД ---
 async function register() {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
   if (!username || !password) return alert('Заполни логин и пароль!');
-  
   const res = await fetch(SERVER + '/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
   const data = await res.json();
-  
-  if (data.token) { 
-    token = data.token; 
-    me = data.user; 
-    // СОХРАНЯЕМ В ПАМЯТЬ
-    localStorage.setItem('messenger_token', token);
-    localStorage.setItem('messenger_user', JSON.stringify(me));
-    start(); 
-  } else alert(data.error);
+  if (data.token) { token = data.token; me = data.user; localStorage.setItem('messenger_token', token); localStorage.setItem('messenger_user', JSON.stringify(me)); start(); } else alert(data.error);
 }
 
 async function login() {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
   if (!username || !password) return alert('Заполни логин и пароль!');
-  
   const res = await fetch(SERVER + '/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
   const data = await res.json();
-  
-  if (data.token) { 
-    token = data.token; 
-    me = data.user; 
-    // СОХРАНЯЕМ В ПАМЯТЬ
-    localStorage.setItem('messenger_token', token);
-    localStorage.setItem('messenger_user', JSON.stringify(me));
-    start(); 
-  } else alert(data.error);
+  if (data.token) { token = data.token; me = data.user; localStorage.setItem('messenger_token', token); localStorage.setItem('messenger_user', JSON.stringify(me)); start(); } else alert(data.error);
 }
 
-// --- ВЫХОД (ОЧИСТКА ПАМЯТИ) ---
 function logout() { 
   if(confirm('Точно выйти?')) {
     localStorage.removeItem('messenger_token');
@@ -244,25 +261,24 @@ function logout() {
 }
 
 function getAvatarHtml(user) {
-  if (user.avatar) return `<img src="${user.avatar}" alt="avatar">`;
-  return isNaN(user.username.charAt(0)) ? user.username.charAt(0) : "👤";
+  let content = user.avatar ? `<img src="${user.avatar}" alt="avatar">` : (isNaN(user.username.charAt(0)) ? user.username.charAt(0) : "👤");
+  return content;
+}
+
+function getFrameClass(frame) {
+  return `frame-${frame || 'none'}`;
 }
 
 async function start() {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'flex';
   
-  document.getElementById('profile-avatar-big').innerHTML = getAvatarHtml(me);
-  document.getElementById('profile-name').innerText = me.username;
-  document.getElementById('settings-username').innerText = me.username;
+  updateProfileUI();
   
   socket = io(SERVER, { auth: { token } });
   
   socket.on('connect_error', (err) => {
-    // Если токен недействителен (например, база сбросилась), выкидываем на экран входа
-    if (err.message === 'unauthorized') {
-      logout();
-    }
+    if (err.message === 'unauthorized') logout();
   });
 
   socket.on('presence', ({ userId, online }) => {
@@ -284,6 +300,18 @@ async function start() {
     }
   });
 
+  socket.on('frame:updated', ({ userId, frame }) => {
+    const u = allUsers.find(x => x.id === userId);
+    if (u) u.frame = frame;
+    renderUsers(allUsers); 
+    
+    if (currentUser && currentUser.id === userId) {
+      currentUser.frame = frame;
+      const cont = document.getElementById('chat-avatar-container');
+      cont.className = `avatar-container ${getFrameClass(frame)}`;
+    }
+  });
+
   socket.on('message:new', (msg) => {
     const partner = msg.from === me.id ? msg.to : msg.from;
     if (currentUser && partner === currentUser.id) appendMessage(msg);
@@ -298,7 +326,26 @@ async function start() {
   loadUsers();
 }
 
-// СЖАТИЕ КАРТИНОК
+function updateProfileUI() {
+  const cont = document.getElementById('profile-avatar-big');
+  cont.innerHTML = getAvatarHtml(me);
+  cont.className = `profile-avatar-big ${getFrameClass(me.frame)}`;
+  document.getElementById('profile-name').innerText = me.username;
+  document.getElementById('settings-username').innerText = me.username;
+}
+
+async function setFrame(frame) {
+  me.frame = frame;
+  localStorage.setItem('messenger_user', JSON.stringify(me));
+  updateProfileUI();
+  
+  await fetch(SERVER + '/user/frame', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ frame })
+  });
+}
+
 function resizeImage(file, maxWidth, maxHeight, callback) {
   const reader = new FileReader();
   reader.onload = function(e) {
@@ -328,8 +375,8 @@ function uploadAvatar(input) {
   if (!file) return;
   resizeImage(file, 200, 200, async function(base64) {
     me.avatar = base64;
-    localStorage.setItem('messenger_user', JSON.stringify(me)); // Обновляем память
-    document.getElementById('profile-avatar-big').innerHTML = getAvatarHtml(me);
+    localStorage.setItem('messenger_user', JSON.stringify(me));
+    updateProfileUI();
     await fetch(SERVER + '/user/avatar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
@@ -371,7 +418,7 @@ function renderUsers(users) {
     div.onclick = () => openChat(u);
     
     const avatarCont = document.createElement('div');
-    avatarCont.className = 'avatar-container';
+    avatarCont.className = `avatar-container ${getFrameClass(u.frame)}`;
     const avatar = document.createElement('div');
     avatar.className = 'avatar';
     avatar.innerHTML = getAvatarHtml(u);
@@ -404,6 +451,7 @@ function openChat(u) {
   currentUser = u;
   document.getElementById('chat-name').innerText = u.username;
   document.getElementById('chat-avatar').innerHTML = getAvatarHtml(u);
+  document.getElementById('chat-avatar-container').className = `avatar-container ${getFrameClass(u.frame)}`;
   document.getElementById('chat-online-dot').style.display = u.online ? 'block' : 'none';
   document.getElementById('chat-view').style.display = 'flex';
   document.getElementById('messages').innerHTML = '';
@@ -470,7 +518,6 @@ function handleImage(input) {
 
 function handleKeyPress(e) { if (e.key === 'Enter') send(); }
 
-// ЗАПУСКАЕМ АВТО-ВХОД ПРИ ЗАГРУЗКЕ СТРАНИЦЫ
 checkAuth();
 </script>
 </body>
